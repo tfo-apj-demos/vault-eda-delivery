@@ -28,56 +28,54 @@
     - name: on kv write
       condition: event.data.event_type == "kv-v2/data-write"
       action:
-        debug:
-          msg: >
-            KV Write Event -
-            Path: {{ event.data.event.metadata.path }},
-            Data Path: {{ event.data.event.metadata.data_path }},
-            Operation: {{ event.data.event.metadata.operation }},
-            Version: {{ event.data.event.metadata.current_version }}
+        run_job_template:
+          name: "Demo Job Template"
+          extra_vars:
+            vault_event_type: "{{ event.data.event_type }}"
+            vault_path: "{{ event.data.event.metadata.path }}"
+            vault_data_path: "{{ event.data.event.metadata.data_path }}"
+            vault_operation: "{{ event.data.event.metadata.operation }}"
+            vault_version: "{{ event.data.event.metadata.current_version }}"
 
     # Rule 2: Handle KV v2 delete operations (soft delete secrets)
     - name: on kv delete
       condition: event.data.event_type == "kv-v2/data-delete"
       action:
-        debug:
-          msg: >
-            KV Delete Event -
-            Path: {{ event.data.event.metadata.path }},
-            Operation: {{ event.data.event.metadata.operation }}
+        run_job_template:
+          name: "Demo Job Template"
+          extra_vars:
+            vault_event_type: "{{ event.data.event_type }}"
+            vault_path: "{{ event.data.event.metadata.path }}"
+            vault_operation: "{{ event.data.event.metadata.operation }}"
 
     # Rule 3: Handle KV v2 patch operations (partial updates)
     - name: on kv patch
       condition: event.data.event_type == "kv-v2/data-patch"
       action:
-        debug:
-          msg: >
-            KV Patch Event -
-            Path: {{ event.data.event.metadata.path }},
-            Data Path: {{ event.data.event.metadata.data_path }},
-            Operation: {{ event.data.event.metadata.operation }}
+        run_job_template:
+          name: "Demo Job Template"
+          extra_vars:
+            vault_event_type: "{{ event.data.event_type }}"
+            vault_path: "{{ event.data.event.metadata.path }}"
+            vault_data_path: "{{ event.data.event.metadata.data_path }}"
+            vault_operation: "{{ event.data.event.metadata.operation }}"
 
     # Rule 4: Handle database events
     - name: on database event
       condition: event.data.event_type is defined and event.data.event_type is match("database/.*")
       action:
-        debug:
-          msg: >
-            Database Event -
-            Type: {{ event.data.event_type }},
-            Plugin: {{ event.data.plugin_info.plugin | default('N/A') }},
-            Mount: {{ event.data.plugin_info.mount_path | default('N/A') }},
-            Operation: {{ event.data.event.metadata.operation | default('N/A') }},
-            Path: {{ event.data.event.metadata.path | default('N/A') }}
+        run_job_template:
+          name: "Demo Job Template"
+          extra_vars:
+            vault_event_type: "{{ event.data.event_type }}"
+            vault_plugin: "{{ event.data.plugin_info.plugin | default('N/A') }}"
+            vault_mount_path: "{{ event.data.plugin_info.mount_path | default('N/A') }}"
+            vault_operation: "{{ event.data.event.metadata.operation | default('N/A') }}"
+            vault_path: "{{ event.data.event.metadata.path | default('N/A') }}"
 
     # Rule 5: Catch-all rule for any Vault event (for debugging/monitoring)
     - name: on any vault event
       condition: event.data is defined
       action:
         debug:
-          msg: >
-            Vault Event -
-            Type: {{ event.data.event_type }},
-            Plugin: {{ event.data.plugin_info.plugin | default('N/A') }},
-            Mount: {{ event.data.plugin_info.mount_path | default('N/A') }},
-            Time: {{ event.time | default('N/A') }}
+          msg: "Vault Event Detected - Type: {{ event.data.event_type }} - Time: {{ event.time | default('N/A') }}"
