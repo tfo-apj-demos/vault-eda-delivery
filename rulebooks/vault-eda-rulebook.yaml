@@ -29,7 +29,7 @@
       condition: event.data.event_type == "kv-v2/data-write"
       action:
         run_job_template:
-          name: "Demo Job Template"
+          name: "Updated Pinned Cert"
           organization: "Default"
           extra_vars:
             vault_event_type: "{{ event.data.event_type }}"
@@ -62,6 +62,20 @@
             vault_path: "{{ event.data.event.metadata.path }}"
             vault_data_path: "{{ event.data.event.metadata.data_path }}"
             vault_operation: "{{ event.data.event.metadata.operation }}"
+
+    # Rule 4: Handle PKI certificate events (issuance, rotation)
+    - name: on pki certificate issued
+      condition: event.data.event_type is defined and event.data.event_type is match("pki/.*")
+      action:
+        run_job_template:
+          name: "Updated Pinned Cert"
+          organization: "Default"
+          extra_vars:
+            vault_event_type: "{{ event.data.event_type }}"
+            vault_plugin: "{{ event.data.plugin_info.plugin | default('N/A') }}"
+            vault_mount_path: "{{ event.data.plugin_info.mount_path | default('N/A') }}"
+            vault_operation: "{{ event.data.event.metadata.operation | default('N/A') }}"
+            vault_path: "{{ event.data.event.metadata.path | default('N/A') }}"
 
     # Rule 4: Handle database events
     - name: on database event
